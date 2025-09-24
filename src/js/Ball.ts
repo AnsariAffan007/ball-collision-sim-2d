@@ -34,7 +34,7 @@ class Ball {
   }
 
   private getXYpoint(point: "X" | "Y", pointValue: number, radius: number, arenaCenterX: number, arenaCenterY: number) {
-    // Use x^2 + y^2 = r^2 equation
+    // Use (x-h)^2 + (y-k)^2 = r^2 equation
     const pointToUse = point === "X" ? arenaCenterY : arenaCenterX;
     return Math.sqrt((radius * radius) - ((pointValue - pointToUse) * (pointValue - pointToUse)))
   }
