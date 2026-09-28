@@ -16,6 +16,11 @@ class Ball {
   // Speed is in pixel/second
   public speed: number;
 
+  // Variables for line equation, to move the ball
+  public x: number;
+  public y: number;
+  public m: number;
+
   constructor(arenaRadius: number, arenaCenterX: number, arenaCenterY: number, ballSpeed: number) {
     // Generating random x position
     const randomX = Math.floor(Math.random() * arenaRadius)
@@ -37,6 +42,8 @@ class Ball {
 
     this.element = newBall
     this.speed = ballSpeed
+    this.x = newBall_X;
+    this.y = newBall_Y
 
     // Getting ball to move. It has to move along some line
     // To get line equation, we will get a random line, and for that, a random slope, 'm'
@@ -64,14 +71,60 @@ class Ball {
     const min = Math.min(m1, m2)
     const max = Math.max(m1, m2)
     const m = min + Math.random() * (max - min)
+    this.m = isNaN(m) ? 1 : m;
+    setInterval(() => {
+      const [currentX, currentY] = this.getCurrentPoint()
+      const step = 1;
+      // We have the line, but we don't know if incrementing the point will move the ball inwards the circle or outwards
+      // So we'll do x+1 for now and calculate y, and get the direction vector
+      // If direction vector is negative, it means line is moving inwards, but if it is positive, we have to do invert the new points
+      let dx = 1;
+      let dy = this.getCurrentSlope()
 
-    console.log(m)
+      // Normalize
+      const len = Math.hypot(dx, dy);
+      dx /= len;
+      dy /= len;
+
+      // We have to select 4 quarters of the circle, based on in which quarter the point is, the x and y will accordingly increment, or decrement
+      // Numbering top left quarter as 1, and moving clockwise.
+      // X will increment in quarter 1 and 3, and decrement in 2 and 4
+      // Y will increment in quarter 1 and 2, and decrement in 3 and 4
+      if (currentX < arenaCenterX) dx = 1;
+      else if (currentX > arenaCenterX) dx = -dx
+
+      if (currentY < arenaCenterY) dy = dy;
+      else if (currentY > arenaCenterY) dy = -dy
+
+      // dy can be NaN, bcs slope can be Infinite
+      if (isNaN(dy)) {
+        dy = currentY < arenaCenterY ? 1 : -1
+      }
+
+      const ballElement = this.getElement()
+      this.x = currentX + (step * dx)
+      this.y = currentY + (step * dy)
+      ballElement.style.left = `${this.x}px`
+      ballElement.style.top = `${this.y}px`
+    }, 100)
   }
 
   private getXYpoint(point: "X" | "Y", pointValue: number, radius: number, arenaCenterX: number, arenaCenterY: number) {
     // Use (x-h)^2 + (y-k)^2 = r^2 equation
     const pointToUse = point === "X" ? arenaCenterY : arenaCenterX;
     return Math.sqrt((radius * radius) - ((pointValue - pointToUse) * (pointValue - pointToUse)))
+  }
+
+  private getCurrentSlope() {
+    return this.m
+  }
+
+  private getCurrentPoint() {
+    return [this.x, this.y] as const
+  }
+
+  private getElement() {
+    return this.element
   }
 }
 
